@@ -56,11 +56,14 @@
 
             if (response.ok) {
                 resultDiv.className = 'success';
+                // AŞAĞIDAKİ KISIM GÜNCELLENDİ:
                 resultDiv.innerHTML = `
-                    <strong>📘 Kitap Bulundu!</strong><br>
-                    <b>Adı:</b> ${data.title}<br>
-                    <b>Yazar:</b> ${data.author}<br>
-                    <b>Yıl:</b> ${data.year}
+                    <h3 style="margin-top:0; color:#2c3e50;">📘 ${data.title}</h3>
+                    <p><strong>✍️ Yazar:</strong> ${data.author}</p>
+                    <p><strong>📅 Yıl:</strong> ${data.year}</p>
+                    <hr style="border: 0; border-top: 1px solid #c3e6cb; margin: 10px 0;">
+                    <p><strong>📘 Kitap Hakkında:</strong></p>
+                    <p style="font-style: italic; color: #444;">${data.context}</p>
                 `;
             } else {
                 resultDiv.className = 'error';
