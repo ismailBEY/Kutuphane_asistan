@@ -1,82 +1,548 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kütüphane Asistanı</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background-color: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 400px; text-align: center; }
-        h1 { color: #2c3e50; margin-bottom: 1.5rem; }
-        input { width: 80%; padding: 10px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
-        button { background-color: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; transition: background 0.3s; }
-        button:hover { background-color: #2980b9; }
-        #result { margin-top: 20px; padding: 15px; border-radius: 5px; text-align: left; display: none; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .loading { color: #666; font-style: italic; display: none; margin-top: 10px;}
+        :root {
+            --primary: #4F46E5;
+            --primary-hover: #4338ca;
+            --bg: #F3F4F6;
+            --text: #1F2937;
+            --white: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            background-color: var(--white);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .btn-nav {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #4B5563;
+            transition: color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-nav:hover {
+            color: var(--primary);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .search-box-container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            color: #111827;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            flex: 1;
+            border: 1px solid transparent;
+            font-size: 1.1rem;
+            padding: 10px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: transparent;
+        }
+
+        /* --- RESULTS --- */
+        .result-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            text-align: left;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: none;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        /* --- MODALS --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(2px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: white;
+            width: 400px;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.open .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #9CA3AF;
+        }
+
+        .close-btn:hover {
+            color: #374151;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            border: 1px solid #E5E7EB;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        .switch-auth {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #6B7280;
+        }
+
+        .switch-auth a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* --- FAVORITES LIST --- */
+        .fav-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .fav-item {
+            padding: 1rem;
+            border-bottom: 1px solid #E5E7EB;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .fav-item:last-child {
+            border-bottom: none;
+        }
+
+        .fav-title {
+            font-weight: 600;
+            color: #111827;
+        }
+
+        .fav-meta {
+            font-size: 0.85rem;
+            color: #6B7280;
+        }
+
+        .auth-user-name {
+            font-weight: 600;
+            color: #374151;
+        }
     </style>
 </head>
+
 <body>
 
-<div class="container">
-    <h1>📚 Kütüphane Asistanı</h1>
-    <p>Aramak istediğiniz kitabın adını girin:</p>
-    
-    <input type="text" id="bookName" placeholder="Örn: Nutuk, 1984, Sefiller...">
-    <button onclick="searchBook()">Ara</button>
-    
-    <div id="loading" class="loading">Aranıyor...</div>
-    <div id="result"></div>
-</div>
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">
+            📚 Kütüphane Asistanı
+        </div>
+        <div class="nav-buttons">
+            <button class="btn-nav" onclick="openModal('favModal'); loadFavorites();">
+                <span>⭐</span> Favorilerim
+            </button>
+            <div id="authButtons">
+                <button class="btn-primary" onclick="openModal('authModal')">Giriş Yap</button>
+            </div>
+        </div>
+    </nav>
 
-<script>
-    async function searchBook() {
-        const title = document.getElementById('bookName').value;
-        const resultDiv = document.getElementById('result');
-        const loadingDiv = document.getElementById('loading');
+    <!-- MAIN CONTENT -->
+    <div class="main-container">
+        <h1>Ne okumak istersiniz?</h1>
+        <div class="search-box-container">
+            <div class="search-input-group">
+                <input type="text" id="bookName" placeholder="Kitap adı, yazar veya konu girin..."
+                    onkeypress="handleKeyPress(event)">
+                <button class="btn-primary" onclick="searchBook()">Ara</button>
+            </div>
+        </div>
 
-        if (!title) {
-            alert("Lütfen bir kitap adı girin!");
-            return;
+        <!-- SEARCH SEARCH RESULT -->
+        <div id="searchResult" class="result-card"></div>
+    </div>
+
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="modal-overlay" onclick="closeModalOnOutside(event, 'authModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="authTitle">Giriş Yap</h2>
+                <button class="close-btn" onclick="closeModal('authModal')">&times;</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm">
+                <div class="form-group">
+                    <input type="text" id="l_username" placeholder="Kullanıcı Adı">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="l_password" placeholder="Şifre">
+                </div>
+                <button class="btn-primary" style="width: 100%" onclick="login()">Giriş Yap</button>
+                <div class="switch-auth">
+                    Hesabın yok mu? <a onclick="toggleAuthMode()">Kayıt Ol</a>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" style="display: none;">
+                <div class="form-group">
+                    <input type="text" id="r_username" placeholder="Kullanıcı Adı Seçin">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="r_password" placeholder="Şifre Belirleyin">
+                </div>
+                <button class="btn-primary" style="width: 100%" onclick="register()">Kayıt Ol</button>
+                <div class="switch-auth">
+                    Zaten hesabın var mı? <a onclick="toggleAuthMode()">Giriş Yap</a>
+                </div>
+            </div>
+            <p id="authMsg" style="text-align: center; margin-top: 10px; font-size: 0.9rem;"></p>
+        </div>
+    </div>
+
+    <!-- FAVORITES MODAL -->
+    <div id="favModal" class="modal-overlay" onclick="closeModalOnOutside(event, 'favModal')">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Favori Kitaplarım</h2>
+                <button class="close-btn" onclick="closeModal('favModal')">&times;</button>
+            </div>
+            <div id="favList" class="fav-list">
+                <p style="text-align: center; color: #6B7280;">Yükleniyor...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "/api";
+        let currentBook = null;
+
+        // --- MODAL CONTROLS ---
+        function openModal(id) {
+            document.getElementById(id).classList.add('open');
         }
 
-        // Ekranı temizle
-        resultDiv.style.display = 'none';
-        resultDiv.className = '';
-        loadingDiv.style.display = 'block';
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('open');
+            // Reset auth messages on close
+            if (id === 'authModal') document.getElementById('authMsg').innerText = '';
+        }
 
-        try {
-            // Bizim Flask API'ye istek atıyoruz
-            const response = await fetch(`/api/search?title=${title}`);
-            const data = await response.json();
-
-            loadingDiv.style.display = 'none';
-            resultDiv.style.display = 'block';
-
-            if (response.ok) {
-                resultDiv.className = 'success';
-                // AŞAĞIDAKİ KISIM GÜNCELLENDİ:
-                resultDiv.innerHTML = `
-                    <h3 style="margin-top:0; color:#2c3e50;">📘 ${data.title}</h3>
-                    <p><strong>✍️ Yazar:</strong> ${data.author}</p>
-                    <p><strong>📅 Yıl:</strong> ${data.year}</p>
-                    <hr style="border: 0; border-top: 1px solid #c3e6cb; margin: 10px 0;">
-                    <p><strong>📘 Kitap Hakkında:</strong></p>
-                    <p style="font-style: italic; color: #444;">${data.context}</p>
-                `;
-            } else {
-                resultDiv.className = 'error';
-                resultDiv.innerHTML = `⚠️ ${data.error || data.message}`;
+        function closeModalOnOutside(e, id) {
+            if (e.target.classList.contains('modal-overlay')) {
+                closeModal(id);
             }
-        } catch (error) {
-            loadingDiv.style.display = 'none';
-            resultDiv.style.display = 'block';
-            resultDiv.className = 'error';
-            resultDiv.innerHTML = "Sunucu ile iletişim hatası!";
         }
-    }
-</script>
 
+        function toggleAuthMode() {
+            const l = document.getElementById('loginForm');
+            const r = document.getElementById('registerForm');
+            const t = document.getElementById('authTitle');
+
+            if (l.style.display === 'none') {
+                l.style.display = 'block'; r.style.display = 'none'; t.innerText = 'Giriş Yap';
+            } else {
+                l.style.display = 'none'; r.style.display = 'block'; t.innerText = 'Kayıt Ol';
+            }
+        }
+
+        function handleKeyPress(e) {
+            if (e.key === 'Enter') searchBook();
+        }
+
+        // --- AUTH LOGIC ---
+        function getToken() { return localStorage.getItem('token'); }
+        function setToken(token) { localStorage.setItem('token', token); updateAuthUI(); }
+        function logout() { localStorage.removeItem('token'); updateAuthUI(); }
+        function getUsername() { return localStorage.getItem('username'); } // Simple storage for UI
+
+        function updateAuthUI() {
+            const token = getToken();
+            const container = document.getElementById('authButtons');
+
+            if (token) {
+                container.innerHTML = `
+                <span class="auth-user-name">👤 ${getUsername() || 'Kullanıcı'}</span>
+                <button class="btn-nav" onclick="logout()" style="color: #EF4444;">Çıkış</button>
+            `;
+                closeModal('authModal');
+            } else {
+                container.innerHTML = `
+                <button class="btn-primary" onclick="openModal('authModal')">Giriş Yap</button>
+            `;
+            }
+        }
+
+        async function login() {
+            const u = document.getElementById('l_username').value;
+            const p = document.getElementById('l_password').value;
+            const msg = document.getElementById('authMsg');
+
+            try {
+                const res = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    localStorage.setItem('username', u);
+                    setToken(data.access_token);
+                } else {
+                    msg.style.color = 'red';
+                    msg.innerText = data.msg;
+                }
+            } catch (e) { msg.innerText = "Hata oluştu"; }
+        }
+
+        async function register() {
+            const u = document.getElementById('r_username').value;
+            const p = document.getElementById('r_password').value;
+            const msg = document.getElementById('authMsg');
+
+            try {
+                const res = await fetch(`${API_URL}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    msg.style.color = 'green';
+                    msg.innerText = "Kayıt Başarılı! Giriş yapabilirsiniz.";
+                    setTimeout(toggleAuthMode, 1500);
+                } else {
+                    msg.style.color = 'red';
+                    msg.innerText = data.msg;
+                }
+            } catch (e) { msg.innerText = "Hata oluştu"; }
+        }
+
+        // --- CORE FEATURES ---
+        async function searchBook() {
+            const title = document.getElementById('bookName').value;
+            const resDiv = document.getElementById('searchResult');
+
+            if (!title) return;
+
+            resDiv.style.display = 'block';
+            resDiv.innerHTML = '<p style="text-align:center">🧠 Yapay zeka analiz ediyor...</p>';
+
+            try {
+                const res = await fetch(`${API_URL}/search?title=${title}`);
+                const data = await res.json();
+
+                if (res.ok) {
+                    currentBook = data;
+                    resDiv.innerHTML = `
+                    <h2 style="margin-top:0">${data.title}</h2>
+                    <p style="color:#6B7280">${data.author} • ${data.year}</p>
+                    <hr style="border:0; border-top:1px solid #eee; margin: 15px 0;">
+                    <p style="line-height:1.6">${data.context}</p>
+                    <button class="btn-primary" style="margin-top:10px; background-color: #10B981;" onclick="addToFavorite()">
+                        ⭐ Favorilere Ekle
+                    </button>
+                    ${!getToken() ? '<small style="display:block; margin-top:5px; color:#6B7280">İşlem için giriş yapmalısınız</small>' : ''}
+                `;
+                } else {
+                    resDiv.innerHTML = `<p style="color:red">⚠️ ${data.message || data.error}</p>`;
+                }
+            } catch (e) { resDiv.innerHTML = "Sunucu hatası"; }
+        }
+
+        async function addToFavorite() {
+            if (!getToken()) {
+                openModal('authModal');
+                document.getElementById('authMsg').innerText = "Önce giriş yapmalısınız!";
+                document.getElementById('authMsg').style.color = "orange";
+                return;
+            }
+            if (!currentBook) return;
+
+            try {
+                const res = await fetch(`${API_URL}/favorite`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    },
+                    body: JSON.stringify({
+                        title: currentBook.title,
+                        author: currentBook.author,
+                        year: currentBook.year
+                    })
+                });
+                if (res.ok) alert("Kitap favorilere eklendi! 🎉");
+                else alert("Hata oluştu");
+            } catch (e) { alert("Bağlantı hatası"); }
+        }
+
+        async function loadFavorites() {
+            const list = document.getElementById('favList');
+            if (!getToken()) {
+                list.innerHTML = '<div style="text-align:center; padding:20px;">Lütfen önce giriş yapın.</div>';
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/favorites`, {
+                    headers: { 'Authorization': 'Bearer ' + getToken() }
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    if (data.length === 0) list.innerHTML = '<div style="text-align:center; padding:20px;">Listeniz boş.</div>';
+                    else {
+                        list.innerHTML = data.map(book => `
+                        <div class="fav-item">
+                            <div>
+                                <div class="fav-title">${book.title}</div>
+                                <div class="fav-meta">${book.author}</div>
+                            </div>
+                            <div class="fav-meta">${book.year}</div>
+                        </div>
+                    `).join('');
+                    }
+                }
+            } catch (e) { list.innerHTML = "Hata oluştu"; }
+        }
+
+        // Init
+        updateAuthUI();
+    </script>
 </body>
+
 </html>
