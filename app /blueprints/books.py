@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request
 import requests
 import json
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from app.models import FavoriteBook, db
 
 books_bp = Blueprint('books', __name__)
 
@@ -35,8 +37,8 @@ def search_book():
         
         prompt = (
             f"'{real_title}' kitabını yazan {author} hakkında Türkçe bilgi ver. "
-            f"Kitabın yazıldığı dönem, yazarın ruh hali ve kitabın önemi nedir? "
-            f"Çok kısa, tek bir paragraf ve samimi bir dille özetle."
+            f"Kitabın yazıldığı dönem, yazarın ruh hali ve kitabın önemi nedir?,neden bu kitabı okumalıyız?,kitap ne anlatıyor? "
+            f"Çok kısa,  bir-iki paragraf ve samimi bir dille özetle."
         )
 
         # Ollama'ya istek atılacak veri paketi
@@ -75,3 +77,41 @@ def search_book():
         
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# --- FAVORITES (PROTECTED) ---
+
+@books_bp.route('/favorite', methods=['POST'])
+@jwt_required()
+def add_favorite():
+    current_user_id = get_jwt_identity()
+    data = request.get_json()
+    
+    title = data.get('title')
+    author = data.get('author')
+    year = data.get('year') # optional, mostly string in api
+
+    if not title:
+        return jsonify({"msg": "Title is required"}), 400
+
+    fav = FavoriteBook(user_id=current_user_id, title=title, author=author, year=str(year))
+    db.session.add(fav)
+    db.session.commit()
+
+    return jsonify({"msg": "Book added to favorites"}), 201
+
+@books_bp.route('/favorites', methods=['GET'])
+@jwt_required()
+def get_favorites():
+    current_user_id = get_jwt_identity()
+    favs = FavoriteBook.query.filter_by(user_id=current_user_id).all()
+    
+    results = []
+    for f in favs:
+        results.append({
+            "id": f.id,
+            "title": f.title,
+            "author": f.author,
+            "year": f.year
+        })
+    
+    return jsonify(results), 200
