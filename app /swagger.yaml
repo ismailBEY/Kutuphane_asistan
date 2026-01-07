@@ -1,14 +1,14 @@
-openapi: 3.0.0
+swagger: "2.0"
 info:
   title: Library Assistant API
   description: API for managing library books, favorites, and AI-powered search.
   version: 1.0.0
-components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+securityDefinitions:
+  BearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+    description: "Enter your token with the prefix: Bearer <token>"
 security:
   - BearerAuth: []
 paths:
@@ -17,21 +17,20 @@ paths:
       tags:
         - Authentication
       summary: Register a new user
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
-              required:
-                - username
-                - password
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            required:
+              - username
+              - password
+            properties:
+              username:
+                type: string
+              password:
+                type: string
       responses:
         '201':
           description: User created successfully
@@ -42,31 +41,28 @@ paths:
       tags:
         - Authentication
       summary: Login and get JWT token
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                username:
-                  type: string
-                password:
-                  type: string
-              required:
-                - username
-                - password
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            required:
+              - username
+              - password
+            properties:
+              username:
+                type: string
+              password:
+                type: string
       responses:
         '200':
           description: Successful login
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  access_token:
-                    type: string
+          schema:
+            type: object
+            properties:
+              access_token:
+                type: string
         '401':
           description: Bad username or password
   /api/search:
@@ -74,31 +70,27 @@ paths:
       tags:
         - Books
       summary: Search for a book (Public & AI Powered)
-      security: []
       parameters:
         - in: query
           name: title
-          schema:
-            type: string
+          type: string
           required: true
           description: Title of the book to search
       responses:
         '200':
           description: Book found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  title:
-                    type: string
-                  author:
-                    type: string
-                  year:
-                    type: string
-                  context:
-                    type: string
-                    description: AI generated summary
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+              author:
+                type: string
+              year:
+                type: string
+              context:
+                type: string
+                description: AI generated summary
         '404':
           description: Book not found
   /api/favorite:
@@ -106,19 +98,19 @@ paths:
       tags:
         - Favorites
       summary: Add a book to favorites (Protected)
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                title:
-                  type: string
-                author:
-                  type: string
-                year:
-                  type: string
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+              author:
+                type: string
+              year:
+                type: string
       responses:
         '201':
           description: Book added to favorites
@@ -130,18 +122,16 @@ paths:
       responses:
         '200':
           description: List of favorite books
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: integer
-                    title:
-                      type: string
-                    author:
-                      type: string
-                    year:
-                      type: string
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                id:
+                  type: integer
+                title:
+                  type: string
+                author:
+                  type: string
+                year:
+                  type: string
