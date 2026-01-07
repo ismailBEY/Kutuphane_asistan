@@ -25,11 +25,7 @@ def create_app():
 
     CORS(app)
     
-    app.config['SWAGGER'] = {
-        'title': 'Library Assistant API',
-        'uiversion': 3
-    }
-    Swagger(app)
+    Swagger(app, template_file='swagger.yaml')
 
     # Blueprint'leri burada import ediyoruz (Circular import'u onlemek icin)
     from .blueprints.books import books_bp
