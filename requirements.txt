@@ -3,3 +3,6 @@ flask-cors
 flasgger
 requests
 mcp
+Flask-SQLAlchemy
+Flask-JWT-Extended
+psycopg2-binary
