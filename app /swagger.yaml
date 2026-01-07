@@ -1,0 +1,147 @@
+openapi: 3.0.0
+info:
+  title: Library Assistant API
+  description: API for managing library books, favorites, and AI-powered search.
+  version: 1.0.0
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+  - BearerAuth: []
+paths:
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '201':
+          description: User created successfully
+        '400':
+          description: Username already exists or missing data
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login and get JWT token
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+        '401':
+          description: Bad username or password
+  /api/search:
+    get:
+      tags:
+        - Books
+      summary: Search for a book (Public & AI Powered)
+      security: []
+      parameters:
+        - in: query
+          name: title
+          schema:
+            type: string
+          required: true
+          description: Title of the book to search
+      responses:
+        '200':
+          description: Book found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                  author:
+                    type: string
+                  year:
+                    type: string
+                  context:
+                    type: string
+                    description: AI generated summary
+        '404':
+          description: Book not found
+  /api/favorite:
+    post:
+      tags:
+        - Favorites
+      summary: Add a book to favorites (Protected)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                author:
+                  type: string
+                year:
+                  type: string
+      responses:
+        '201':
+          description: Book added to favorites
+  /api/favorites:
+    get:
+      tags:
+        - Favorites
+      summary: List my favorite books (Protected)
+      responses:
+        '200':
+          description: List of favorite books
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    title:
+                      type: string
+                    author:
+                      type: string
+                    year:
+                      type: string
